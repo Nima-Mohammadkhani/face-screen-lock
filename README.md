@@ -106,25 +106,38 @@ face-screen-lock/
 
 ### 1. Install Dependencies
 
-```bash
-# Inside a virtualenv (recommended)
-pip install -r requirements.txt
+**Windows:**
+```cmd
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
 ```
 
-> **macOS:** Do **not** use Apple's system Python (`/usr/bin/python3`) — it ships with an ancient Tcl/Tk 8.5 that crashes the settings window. Use a modern Python via Homebrew:
-> ```bash
-> brew install python@3.12 python-tk@3.12
-> python3.12 -m venv .venv
-> .venv/bin/python -m pip install -r requirements.txt
-> ```
+**macOS:**
+> Do **not** use Apple's system Python (`/usr/bin/python3`) — it ships with an ancient Tcl/Tk 8.5 that crashes the settings window. Use Homebrew instead:
+```bash
+brew install python@3.12 python-tk@3.12
+python3.12 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+```
 
-> **Linux:** If `tkinter` is missing, install it with your package manager:
-> ```bash
-> sudo apt install python3-tk   # Debian/Ubuntu
-> ```
+**Linux:**
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+# If tkinter is missing:
+sudo apt install python3-tk   # Debian/Ubuntu
+```
+
+---
 
 ### 2. Enroll Your Face (once)
 
+**Windows:**
+```cmd
+.venv\Scripts\python.exe enroll.py
+```
+
+**macOS / Linux:**
 ```bash
 ./enroll.sh
 ```
@@ -140,15 +153,34 @@ A guided wizard opens and walks you through 6 steps:
 
 After all steps, the model trains automatically and saves to `data/model.yml`.
 
+---
+
 ### 3. Start Monitoring
 
+**Windows:**
+```cmd
+:: System tray icon (recommended)
+.venv\Scripts\pythonw.exe menubar.py
+
+:: Headless — no icon
+.venv\Scripts\python.exe monitor.py
+
+:: With live camera preview
+.venv\Scripts\python.exe monitor.py --debug
+```
+
+> `pythonw.exe` runs without a console window. Use `python.exe` if you want to see log output in a terminal.
+
+**macOS / Linux:**
 ```bash
-./run.sh          # System tray icon (recommended)
-./monitor.sh      # Headless (no icon)
-./monitor.sh --debug   # With live camera preview window
+./run.sh                  # System tray icon (recommended)
+./monitor.sh              # Headless — no icon
+./monitor.sh --debug      # With live camera preview
 ```
 
 > **macOS:** Go to **System Settings → Lock Screen** and set *"Require password after screen saver begins or display is turned off"* to **Immediately** — otherwise the screen turns off but doesn't actually lock.
+
+> **Linux (GNOME):** If the system tray icon doesn't appear, install the AppIndicator extension or use `monitor.py` directly.
 
 ## Configuration (`config.json`)
 
@@ -213,10 +245,17 @@ launchctl unload ~/Library/LaunchAgents/com.nima.facelock.plist
 1. Open Task Scheduler → **Create Task**
 2. **General:** name it `FaceLock`, keep *"Run only when user is logged on"* (camera needs an active session)
 3. **Triggers → New:** Begin the task: **At log on**
-4. **Actions → New:** Program: `.venv\Scripts\pythonw.exe` · Arguments: full path to `monitor.py` · Start in: project folder
+4. **Actions → New:**
+   - Program: full path to `.venv\Scripts\pythonw.exe`
+   - Arguments: `menubar.py` (for tray icon) or `monitor.py` (headless)
+   - Start in: full path to project folder (e.g. `C:\path\face-screen-lock`)
 5. Save — no admin password needed
 
-Simpler alternative: place a shortcut to `pythonw.exe "C:\path\face-screen-lock\monitor.py"` in `shell:startup`.
+**Simpler alternative:** Create a shortcut and place it in the Startup folder (`Win+R` → `shell:startup`):
+```
+Target:  C:\path\face-screen-lock\.venv\Scripts\pythonw.exe menubar.py
+Start in: C:\path\face-screen-lock
+```
 
 ### Linux — systemd user service
 
