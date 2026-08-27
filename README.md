@@ -1,208 +1,185 @@
-# قفل خودکار سیستم با تشخیص چهره
+<div align="center">
 
-وقتی جلوی سیستم نباشید (صورت صاحب سیستم برای مدت مشخصی جلوی دوربین دیده نشود)، این برنامه به‌صورت خودکار سیستم را قفل می‌کند. روی مک، ویندوز و لینوکس کار می‌کند.
+# 🔒 Face Screen Lock 🔒
 
-## چطور کار می‌کند
+### *Automatically locks your screen when you step away — powered by real-time facial recognition*
 
-1. `enroll.py` — چند ده عکس از صورت شما می‌گیرد و یک مدل تشخیص چهره (LBPH، از کتابخانه‌ی OpenCV) روی آن آموزش می‌دهد. این کار فقط یک‌بار لازم است.
-2. `monitor.py` — هر چند ثانیه یک‌بار از دوربین عکس می‌گیرد؛ اگر صورت شما را تشخیص بدهد، حساب می‌شود که پشت سیستم هستید. اگر برای مدت `away_seconds_threshold` (پیش‌فرض ۱۵ ثانیه) صورت‌تان دیده نشود، دستور قفل‌کردن سیستم را برای سیستم‌عامل‌تان اجرا می‌کند.
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-LBPH-5C3EE8.svg?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
+[![Platform](https://img.shields.io/badge/Platform-Win%20%7C%20Mac%20%7C%20Linux-lightgrey.svg?style=for-the-badge&logo=linux&logoColor=white)]()
+[![i18n](https://img.shields.io/badge/i18n-EN%20%2F%20FA-FF6B6B.svg?style=for-the-badge&logo=googletranslate&logoColor=white)]()
+[![License](https://img.shields.io/badge/License-Educational-22C55E.svg?style=for-the-badge)]()
 
-از کتابخانه‌ی سنگین `dlib`/`face_recognition` استفاده نشده تا نصب روی هر سه سیستم‌عامل بدون دردسر کامپایل باشد؛ فقط `opencv-contrib-python` لازم است.
+---
 
-## نصب
+</div>
+
+## Features
+
+**Smart Face Recognition**
+- Trains a personal LBPH model from your own face samples (one-time enrollment)
+- Detects and recognizes your face every few seconds via webcam
+- Locks the screen automatically when you've been away too long
+- No heavy dependencies like `dlib` — pure `opencv-contrib-python`
+
+**Adaptive Learning**
+- Automatically updates the model as your appearance gradually changes (new beard, glasses, seasonal lighting)
+- Retrains in the background when a high-confidence match is detected
+- No need to re-enroll for gradual changes — only for drastic ones
+
+**Activity Awareness**
+- Won't lock while you're actively typing or moving the mouse
+- Cross-platform idle detection: `ioreg` on macOS, `GetLastInputInfo` on Windows, `xprintidle` on Linux
+- Configurable grace period and a security ceiling to prevent bypass by prolonged typing
+
+**Stranger Detection**
+- Detects faces that don't match the owner and locks faster
+- Overrides activity-based lock prevention when an unrecognized face is visible
+- Configurable separate timeout for stranger-triggered locking
+
+**Meeting Mode**
+- Detects running meeting apps (Zoom, Teams, Skype, Webex, GoToMeeting) via process list
+- Multiplies the lock timeout during active meetings to account for natural gaze shifts
+- Add custom app names for unlisted meeting software
+
+**Bilingual UI (English / Persian)**
+- Full Persian (فارسی) and English support across menu, settings window, and logs
+- Right-to-left (RTL) layout support for Persian
+- Switch languages at runtime — no restart required
+
+**System Tray Status Icon**
+- 🟢 Green — owner detected
+- 🟠 Orange — away (within grace period before locking)
+- 🔴 Dark red — unrecognized face detected (fast-lock mode)
+- ⚫ Gray — monitoring paused
+- 🔵 Blue — starting up
+- 🔴 Red — error (camera unavailable or model missing)
+
+## Tech Stack
+
+<div align="center">
+
+![Python](https://img.shields.io/badge/-Python_3.9+-3776AB?style=flat-square&logo=python&logoColor=white)
+![OpenCV](https://img.shields.io/badge/-OpenCV_contrib-5C3EE8?style=flat-square&logo=opencv&logoColor=white)
+![NumPy](https://img.shields.io/badge/-NumPy-013243?style=flat-square&logo=numpy&logoColor=white)
+![pystray](https://img.shields.io/badge/-pystray-555555?style=flat-square&logo=python&logoColor=white)
+
+![Pillow](https://img.shields.io/badge/-Pillow-FFD43B?style=flat-square&logo=python&logoColor=black)
+![Tkinter](https://img.shields.io/badge/-Tkinter-3776AB?style=flat-square&logo=python&logoColor=white)
+![psutil](https://img.shields.io/badge/-psutil-22C55E?style=flat-square&logo=python&logoColor=white)
+![arabic-reshaper](https://img.shields.io/badge/-arabic--reshaper-FF6B6B?style=flat-square&logo=googletranslate&logoColor=white)
+![python-bidi](https://img.shields.io/badge/-python--bidi-FF6B6B?style=flat-square&logo=googletranslate&logoColor=white)
+
+</div>
+
+## Project Structure
+
+```
+face-screen-lock/
+├── monitor.py               # Entry point — headless monitoring (--debug for live preview)
+├── monitor_core.py          # MonitorEngine: main loop, face detection & locking logic
+├── enroll.py                # Guided face enrollment wizard (run once)
+├── menubar.py               # System tray icon, menu, threading, config hot-reload
+├── settings_window.py       # Tkinter settings GUI (4 tabs)
+│
+├── camera_utils.py          # Webcam open + Haar Cascade face detection
+├── activity_utils.py        # Cross-platform keyboard/mouse idle detection
+├── lock_screen.py           # OS-specific screen lock commands
+├── meeting_utils.py         # Meeting app detection via psutil
+├── i18n.py                  # Bilingual string table (EN / FA)
+├── text_render.py           # Persian/Arabic RTL text renderer (Pillow + reshaper)
+├── config_utils.py          # config.json load/save
+│
+├── config.json              # User configuration
+├── requirements.txt         # Python dependencies
+├── run.sh                   # Launch menubar (system tray icon)
+├── monitor.sh               # Launch headless monitor
+├── enroll.sh                # Launch enrollment wizard
+│
+└── data/
+    ├── model.yml            # Trained LBPH model (~5 MB)
+    ├── labels.json          # Face label mappings
+    └── activity.log         # Detection and lock event log
+```
+
+## Quick Start
+
+### 1. Install Dependencies
 
 ```bash
-# ترجیحاً داخل یک virtualenv
+# Inside a virtualenv (recommended)
 pip install -r requirements.txt
 ```
 
-پایتون ۳.۹ یا بالاتر پیشنهاد می‌شود.
+> **macOS:** Do **not** use Apple's system Python (`/usr/bin/python3`) — it ships with an ancient Tcl/Tk 8.5 that crashes the settings window. Use a modern Python via Homebrew:
+> ```bash
+> brew install python@3.12 python-tk@3.12
+> python3.12 -m venv .venv
+> .venv/bin/python -m pip install -r requirements.txt
+> ```
 
-**روی مک، از پایتون سیستمی اپل (`/usr/bin/python3`) استفاده نکنید** — Tcl/Tk خیلی قدیمی (۸.۵) همراهش می‌آید که پنجره‌ی تنظیمات گرافیکی (`settings_window.py`) را روی build‌های جدید مک کرش می‌کند (خطای `SIGABRT` با دیالوگ «Reopen / Report to Apple»). به‌جایش یک پایتون مدرن نصب کنید و پروژه (از جمله virtualenv) را با همان بسازید، مثلاً با Homebrew:
+> **Linux:** If `tkinter` is missing, install it with your package manager:
+> ```bash
+> sudo apt install python3-tk   # Debian/Ubuntu
+> ```
 
-```bash
-brew install python@3.12 python-tk@3.12
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-```
-
-بعد از این، به‌جای `python xxx.py` مستقیم، از اسکریپت‌های آماده‌ی زیر استفاده کنید — این‌ها همیشه پایتون داخل `.venv` را صدا می‌زنند (نه پایتون سیستمی خراب اپل)، حتی اگر یادتان برود virtualenv را فعال کنید:
-
-```bash
-./run.sh       # menubar.py — آیکون نوار منو
-./enroll.sh    # enroll.py — ثبت هدایت‌شده‌ی چهره
-./monitor.sh   # monitor.py — بدون آیکون؛ ./monitor.sh --debug برای پنجره‌ی پیش‌نمایش
-```
-
-(یا `source .venv/bin/activate` بزنید تا `python`/`python3` خودشان به نسخه‌ی درست اشاره کنند و مستقیم `python menubar.py` و امثالش کار کند.)
-
-**مک:** اولین بار که دوربین را باز می‌کند، macOS یک پاپ‌آپ اجازه‌ی دسترسی به دوربین نشان می‌دهد برای برنامه‌ای که پایتون را اجرا می‌کند (معمولاً Terminal یا iTerm). آن را تایید کنید. اگر بعداً دسترسی را رد کرده‌اید: System Settings > Privacy & Security > Camera.
-
-## ثبت چهره (هدایت‌شده)
+### 2. Enroll Your Face (once)
 
 ```bash
 ./enroll.sh
 ```
 
-یک پنجره‌ی پیش‌نمایش باز می‌شود و قدم‌به‌قدم راهنمایی‌تان می‌کند — دیگر لازم نیست خودتان حدس بزنید سرتان را چطور بچرخانید:
+A guided wizard opens and walks you through 6 steps:
 
-1. روبه‌رو، حالت عادی
-2. کمی چرخش به چپ
-3. کمی چرخش به راست
-4. کمی بالا
-5. کمی پایین
-6. (اختیاری) یک دور با نور کم‌تر اتاق — چون این مرحله نیاز به یک کار دستی دارد (کم‌کردن نور)، منتظر می‌ماند تا کلید `c` را بزنید که آماده‌اید؛ اگر نمی‌خواهید این مرحله را انجام دهید، کلید `s` را بزنید تا رد شود.
+1. Face forward — normal position
+2. Slight left turn
+3. Slight right turn
+4. Slightly up
+5. Slightly down
+6. *(Optional)* Low-light — press `c` when ready, `s` to skip
 
-هر مرحله سهمی از تعداد کل نمونه‌ها (`enroll_sample_count` در `config.json`، پیش‌فرض ۴۰) می‌گیرد. بعد از تمام‌شدن همه‌ی مراحل، مدل خودش آموزش داده و در `data/model.yml` ذخیره می‌شود.
+After all steps, the model trains automatically and saves to `data/model.yml`.
 
-اگر بعداً خواستید کامل از نو ثبت کنید (مثلاً ظاهرتان خیلی عوض شده یا تشخیص ضعیف شده)، فایل‌های `data/faces/` را پاک کنید و `./enroll.sh` را دوباره اجرا کنید. برای تغییرات تدریجی‌تر (ریش گذاشتن، عینک، نور فصل‌ها) اصلاً لازم نیست دوباره enroll کنید — «یادگیری تطبیقی» (پایین‌تر توضیح داده شده) خودش این کار را در پس‌زمینه انجام می‌دهد.
-
-## اجرای مانیتور
+### 3. Start Monitoring
 
 ```bash
-./monitor.sh
+./run.sh          # System tray icon (recommended)
+./monitor.sh      # Headless (no icon)
+./monitor.sh --debug   # With live camera preview window
 ```
 
-برای دیدن پنجره‌ی پیش‌نمایش زنده (برای تنظیم دقیق‌تر، نه برای استفاده‌ی روزمره چون منابع بیشتری مصرف می‌کند):
+> **macOS:** Go to **System Settings → Lock Screen** and set *"Require password after screen saver begins or display is turned off"* to **Immediately** — otherwise the screen turns off but doesn't actually lock.
 
-```bash
-./monitor.sh --debug
-```
+## Configuration (`config.json`)
 
-## ویژگی‌های هوشمند
+| Key | Description | Default |
+|-----|-------------|---------|
+| `language` | UI language: `"en"` or `"fa"` | `"en"` |
+| `camera_index` | Which camera to use (0 = first) | `0` |
+| `check_interval_seconds` | How often to capture a frame | `2` |
+| `away_seconds_threshold` | Lock after N seconds without owner face | `15` |
+| `lock_cooldown_seconds` | Minimum gap between consecutive locks | `30` |
+| `confidence_threshold` | LBPH match sensitivity — lower = stricter | `70` |
+| `require_activity_check` | Skip lock while actively typing/moving mouse | `true` |
+| `activity_grace_seconds` | "Recent" activity window in seconds | `5` |
+| `activity_override_max_seconds` | Security ceiling: max seconds activity alone can delay lock | `120` |
+| `lock_faster_on_unrecognized_face` | Fast-lock when a stranger's face is detected | `true` |
+| `unrecognized_face_seconds_threshold` | Lock timeout when stranger detected | `5` |
+| `adaptive_learning` | Auto-update model from high-confidence detections | `true` |
+| `adaptive_learning_interval_minutes` | Min gap between adaptive retrains | `10` |
+| `adaptive_learning_confidence_threshold` | Confidence required to accept a sample | `40` |
+| `adaptive_learning_max_samples` | Max adaptive samples kept (oldest pruned) | `80` |
+| `meeting_mode_enabled` | Extend lock timeout during meeting apps | `true` |
+| `meeting_mode_multiplier` | Multiply lock threshold by this during meetings | `3` |
+| `meeting_app_names` | Extra process names to treat as meeting apps | `[]` |
 
-علاوه بر ثبت هدایت‌شده‌ی چهره (بخش قبل)، این سه‌تا هم هست. همه‌شون پیش‌فرض روشن‌ان؛ از منوی نوار منو (بخش بعدی) هرکدوم رو جدا می‌تونید خاموش کنید، یا مستقیم توی `config.json` تنظیمشون کنید.
+Most settings can be changed live from the **Settings window** (menu → Settings…) without editing the file manually. The monitor picks up changes immediately.
 
-### ۱. قفل نکردن حین فعالیت کیبورد/موس
+## Auto-Start at Boot
 
-اگه چهره‌تون یه لحظه جلوی دوربین نباشه (مثلاً دارید از روی کاغذ می‌خونید یا سرتون پایینه) ولی همون لحظه‌ها دارید فعالانه تایپ می‌کنید یا موس رو حرکت می‌دید، سیستم قفل نمی‌کنه. با `activity_utils.py` انجام می‌شه که «چند ثانیه از آخرین فعالیت کیبورد/موس گذشته» رو کراس‌پلتفرم می‌گیره (مک: `ioreg`، ویندوز: `GetLastInputInfo`، لینوکس: `xprintidle` یا اکستنشن X11 اگه در دسترس باشه).
+### macOS — LaunchAgent
 
-- `require_activity_check`: روشن/خاموش (پیش‌فرض `true`)
-- `activity_grace_seconds`: فعالیت توی چند ثانیه‌ی اخیر «به‌تازگی» حساب بشه (پیش‌فرض ۵)
-
-**نکته‌ی امنیتی که قبلاً یه حفره بود، الان بسته شده:** نسخه‌ی اول این ویژگی فقط چک می‌کرد کیبورد/موس به‌تازگی فعال بوده یا نه — بدون توجه به این‌که واقعاً خودتونید یا یه نفر دیگه که نشسته پشت سیستم. یعنی تئوریاً اگه یکی دیگه می‌نشست و مدام تایپ می‌کرد، سیستم هیچ‌وقت قفل نمی‌شد. الان دو تا محافظ اضافه شده:
-
-- **تشخیص صورت غریبه:** اگه دوربین یه صورت ببینه که با صاحب سیستم تطبیق نداره (یعنی یه نفر دیگه واقعاً جلوی دوربینه)، «عدم قفل به‌خاطر فعالیت» اصلاً اعمال نمی‌شه — حتی اگه همون لحظه کیبورد فعال باشه — و به‌جاش با یه آستانه‌ی خیلی کوتاه‌تر (`unrecognized_face_seconds_threshold`، پیش‌فرض ۵ ثانیه) قفل می‌شه. آیکون نوار منو هم توی این حالت رنگش قرمز تیره می‌شه (بخش بعدی). با `lock_faster_on_unrecognized_face: false` می‌تونید این رفتار رو خاموش کنید.
-- **سقف زمانی روی «عدم قفل به‌خاطر فعالیت»:** حتی وقتی هیچ صورتی اصلاً دیده نمی‌شه (مثلاً فرد دیگه بیرون از دید دوربین نشسته)، فعالیت کیبورد/موس فقط تا `activity_override_max_seconds` (پیش‌فرض ۱۲۰ ثانیه) می‌تونه قفل رو عقب بندازه. بعد از اون سقف، اگه چهره‌ی صاحب سیستم هنوز تأیید نشده، دیگه صرفِ فعالیت کافی نیست و روال عادی قفل (بر اساس `away_seconds_threshold`) از سر گرفته می‌شه.
-
-با این دو تا، منطق نهایی این می‌شه: «اگه خودتونید (چهره یا فعالیت کوتاه‌مدت بدون هیچ صورت غریبه‌ای) قفل نمی‌کنه؛ اگه یه نفر دیگه‌ست (چه صورتش دیده بشه، چه فقط طولانی‌مدت فعالیت بدون تأیید چهره ادامه پیدا کنه) قفل می‌کنه.» اگه اصلاً نمی‌خواید ریسک این حفره رو داشته باشید، ساده‌ترین راه خاموش‌کردن کامل `require_activity_check`ه.
-
-روی لینوکس بدون X11 در دسترس (مثلاً بعضی سشن‌های محض Wayland)، تشخیص فعالیت کیبورد/موس ممکنه اصلاً کار نکنه؛ در اون صورت بی‌صدا غیرفعال می‌مونه و رفتار برنامه دقیقاً مثل قبل (فقط بر اساس چهره) می‌مونه، خطایی هم نمی‌ده.
-
-### ۲. یادگیری تطبیقی
-
-هر بار که با اطمینان بالا (نه فقط بالای حد قبولی معمولی، بلکه خیلی مطمئن) شناسایی می‌شید، اون فریم به‌عنوان یه نمونه‌ی جدید به `data/faces/` اضافه می‌شه و مدل دوباره (سریع، چون تعداد عکس‌ها کمه) آموزش می‌بینه. این‌طوری با تغییرات تدریجی ظاهرتون (ریش گذاشتن، عینک جدید، نور فصل‌های مختلف) خودش هماهنگ می‌مونه بدون اینکه لازم باشه دوباره `enroll.py` رو اجرا کنید.
-
-- `adaptive_learning`: روشن/خاموش (پیش‌فرض `true`)
-- `adaptive_learning_interval_minutes`: حداقل فاصله بین دو بار یادگیری (پیش‌فرض ۱۰ دقیقه، تا مدل هر چند ثانیه یه‌بار دوباره آموزش نبینه)
-- `adaptive_learning_confidence_threshold`: چقدر باید مطمئن باشه تا نمونه رو قابل‌اعتماد بدونه (پیش‌فرض ۴۰؛ عدد کمتر از `confidence_threshold` معمولی چون این نمونه‌ها مستقیم روی مدل اثر می‌ذارن و باید محتاط‌تر باشیم)
-- `adaptive_learning_max_samples`: سقف تعداد نمونه‌های تطبیقی نگه‌داشته‌شده (پیش‌فرض ۸۰)؛ وقتی رد بشه، قدیمی‌ترین‌ها پاک می‌شن. نمونه‌های اصلی enroll (`owner_*.png`) هیچ‌وقت پاک نمی‌شن، فقط نمونه‌های تطبیقی (`adaptive_*.png`).
-
-### ۳. حالت جلسه
-
-وقتی یه اپ جلسه‌ی ویدیویی شناخته‌شده (Zoom، Microsoft Teams، Skype، Webex، GoToMeeting) در حال اجراست، آستانه‌ی قفل موقتاً چند برابر می‌شه، چون طبیعیه توی جلسه گاهی نگاهتون به پنجره‌ی جلسه باشه نه دوربین اصلی. با `meeting_utils.py` (که از کتابخانه‌ی `psutil` برای دیدن لیست پروسه‌های در حال اجرا استفاده می‌کنه) پیاده شده.
-
-- `meeting_mode_enabled`: روشن/خاموش (پیش‌فرض `true`)
-- `meeting_mode_multiplier`: آستانه‌ی قفل چند برابر بشه حین جلسه (پیش‌فرض ۳ — یعنی اگه عادی ۱۵ ثانیه‌ست، حین جلسه می‌شه ۴۵)
-- `meeting_app_names`: لیست اضافه‌ای از اسم پروسه‌ها اگه اپ جلسه‌تون توی لیست پیش‌فرض نیست (مثلاً `["Google Chrome"]` — دقت کنید این خیلی کلیه و ممکنه همیشه فعال بمونه چون کروم رو همه باز دارن؛ بهتره فقط اپ‌های اختصاصی تماس رو اضافه کنید)
-
-**محدودیت مهم:** این تشخیص فقط بر اساس «اسم پروسه در حال اجراست یا نه»ست، نه اینکه واقعاً توی تماسید. یعنی اگه Zoom باز باشه ولی توی تماس نباشید هم حالت جلسه فعال می‌شه. همچنین نمی‌تونه تب‌های مرورگر (مثلاً یه تب گوگل‌میت توی کروم) رو تشخیص بده، چون از دید سیستم‌عامل فقط «Chrome در حال اجراست» دیده می‌شه، نه اینکه کدوم تب باز یا فعاله.
-
-یه نکته‌ی جدا و مهم‌تر: بیشتر وبکم‌ها و سیستم‌عامل‌ها اجازه نمی‌دن دو تا برنامه هم‌زمان از یه دوربین فریم بگیرن. یعنی اگه Zoom/Meet داره از همون دوربینی که این برنامه مانیتور می‌کنه استفاده می‌کنه، ممکنه خواندن فریم توسط خود این برنامه اصلاً ناموفق بشه (نه اینکه چهره‌تون رو نشناسه — دوربین در دسترسش نباشه). توی این حالت، برنامه خودش این رو به‌عنوان خطا لاگ می‌کنه و **قفل نمی‌کنه** (چون اصلاً نمی‌تونه تصمیم بگیره)، پس از این نظر ایمنه، ولی طبیعتاً هم دیگه واقعاً مانیتورینگی هم در جریان نیست تا وقتی دوربین آزاد بشه.
-
-## آیکون نوار منو (Menu bar)
-
-به‌جای اجرای `monitor.py` توی یه پنجره‌ی ترمینال خام، می‌تونید `menubar.py` رو اجرا کنید که یه دایره‌ی رنگی بالای صفحه (نوار منوی مک، system tray روی ویندوز/لینوکس) نشون می‌ده:
-
-```bash
-./run.sh
-```
-
-رنگ آیکون وضعیت زنده رو نشون می‌ده: **سبز** = صاحب سیستم شناسایی شده، **نارنجی** = شناسایی نشده (توی مهلت قبل از قفل)، **قرمز تیره** = یه صورت غیر از صاحب سیستم دیده شده (احتمال حضور فرد دیگه، در حال قفل سریع)، **خاکستری** = مانیتورینگ مکث‌شده، **آبی** = تازه استارت شده، **قرمز** = خطا (مثلاً مدل پیدا نشد یا دوربین باز نشد).
-
-روی آیکون کلیک کنید تا منو باز بشه: خط اول وضعیت رو به‌صورت متنی هم نشون می‌ده — و اگه الان قفل‌نشدن به‌خاطر فعالیت کیبورد/موسه، حالت جلسه فعاله، یا یه صورت غریبه دیده شده، همون خط اول اینا رو هم می‌نویسه (مثلاً «Status: present (due to keyboard/mouse activity) · Meeting mode active» یا «Status: away — a face other than the owner was seen!»). «مکث مانیتورینگ» یه سوییچه که موقتاً (بدون بستن برنامه) قفل‌شدن رو خاموش می‌کنه — مثلاً وقتی دارید اسکرین‌شر می‌کنید و نمی‌خواید یهو قفل بشه — و «خروج» کامل برنامه رو می‌بنده.
-
-### زبان (دوزبانه: انگلیسی/فارسی)
-
-هم منوی نوار منو/پنجره‌ی تنظیمات و هم لاگ (`data/activity.log`) دوزبانه‌ان — **پیش‌فرض انگلیسی**. برای تغییر زبان دو راه هست:
-
-- از منوی نوار منو، زیرمنوی **«Language»** را باز کنید و «English» یا «فارسی» را انتخاب کنید.
-- یا از پنجره‌ی تنظیمات (بخش بعد)، توی تب «Basic»/«پایه» یه dropdown زبان هست.
-
-هر دو راه همون لحظه هم روی خود پنجره/منو اعمال می‌شه (بدون نیاز به بستن و باز کردن دوباره) و هم توی `config.json` (کلید `language`، مقدار `"en"` یا `"fa"`) ذخیره می‌شه، پس دفعه‌ی بعد هم همون زبان باقی می‌مونه. لاگ‌های قبلی که قبلاً نوشته شدن به زبان قبلی می‌مونن (بازنویسی نمی‌شن)؛ فقط پیام‌های بعدی به زبان جدید نوشته می‌شن.
-
-### تغییر تنظیمات از توی یه پنجره‌ی گرافیکی
-
-از منو گزینه‌ی «تنظیمات...» را انتخاب کنید تا یه پنجره‌ی جدا (`settings_window.py`، با Tkinter) باز بشه — دیگه لازم نیست دستی `config.json` رو ادیت کنید. برای این‌که شلوغ نشه، توی چهار تب دسته‌بندی شده:
-
-- **پایه** (همیشه اعمال می‌شه): زمان قفل بعد از غیبت (`away_seconds_threshold`)، فاصله‌ی بررسی دوربین (`check_interval_seconds`)، حساسیت تشخیص چهره (سه گزینه‌ی ساده به‌جای عدد خام `confidence_threshold`)، فاصله‌ی بین دو قفل پشت‌سرهم (`lock_cooldown_seconds`).
-- **فعالیت کیبورد/موس**: چک‌باکس «فعال باشه» (`require_activity_check`)، مهلت فعالیت اخیر (`activity_grace_seconds`)، حداکثر مدت اعتبار فعالیت بدون تأیید چهره (`activity_override_max_seconds` — سقف امنیتی بالا)، قفل سریع اگه صورت غریبه دیده بشه (`lock_faster_on_unrecognized_face`)، مهلت قفل هنگام دیدن صورت غریبه (`unrecognized_face_seconds_threshold`).
-- **یادگیری تطبیقی**: چک‌باکس «فعال باشه» (`adaptive_learning`)، فاصله‌ی یادگیری، سخت‌گیری یادگیری، حداکثر نمونه‌های تطبیقی.
-- **حالت جلسه**: چک‌باکس «فعال باشه» (`meeting_mode_enabled`)، ضریب افزایش زمان قفل حین جلسه.
-
-وقتی چک‌باکس «فعال باشه»ی یه تب رو خاموش کنید، بقیه‌ی کنترل‌های همون تب هم به‌طور خودکار غیرفعال (خاکستری) می‌شن، چون دیگه اثری ندارن.
-
-هر تغییری فوری در `config.json` ذخیره می‌شه؛ پروسه‌ی اصلی مانیتورینگ (`menubar.py`) هر تیک تغییر فایل رو تشخیص می‌ده و بدون نیاز به بستن و باز کردن دوباره‌ی برنامه اعمالش می‌کنه.
-
-**نکته‌ی فنی مهم:** این پنجره به‌عنوان یه پروسه‌ی کاملاً جدا (نه یه ترد داخل همون پروسه‌ی `menubar.py`) اجرا می‌شه — چون ترکیب حلقه‌ی رویدادهای Tkinter و pystray در یک پروسه‌ی واحد، خصوصاً روی مک (هردو AppKit-محورند)، ناپایدار است.
-
-اگه روی مک از پایتون سیستمی اپل (`/usr/bin/python3`) استفاده می‌کنید و با باز کردن این پنجره خطایی شبیه `macOS XX or later required` دیدید، علتش نسخه‌ی خیلی قدیمی Tcl/Tk (۸.۵) هست که اپل همراه پایتون سیستمی می‌ده، نه کد این پروژه. راه‌حل: یه پایتون مدرن‌تر نصب کنید — مثلاً با Homebrew:
-
-```bash
-brew install python-tk@3.12   # یا هر ورژن پایتونی که استفاده می‌کنید
-```
-
-و پروژه رو با همون پایتون (نه `/usr/bin/python3`) اجرا کنید. نصب‌کننده‌ی رسمی از python.org هم از ابتدا Tcl/Tk مدرن داره و این مشکل رو نداره.
-
-روی لینوکس، اگه بسته‌ی `tkinter` سیستمی نصب نیست، معمولاً با چیزی مثل `sudo apt install python3-tk` (دبیان/اوبونتو) نصب می‌شه — `tkinter` بخشی از کتابخانه‌ی استاندارد پایتونه، پس نیازی به `pip install` نداره.
-
-پایین منوی نوار منو دو گزینه‌ی دیگه هم هست:
-
-- **«باز کردن فایل تنظیمات کامل...»** — برای تنظیماتی که توی پنجره‌ی گرافیکی نیستن (مثل `camera_index` یا `enroll_sample_count`، که به‌ندرت لازم می‌شه عوض بشن)، همون `config.json` رو با ادیتور پیش‌فرض سیستم‌تان باز می‌کند تا هر عددی خواستید دستی بگذارید.
-- **«مشاهده‌ی لاگ فعالیت...»** — فایل `data/activity.log` رو باز می‌کند تا بدون رفتن سراغ ترمینال ببینید کی حضور/غیبت تشخیص داده شده، کی قفل شده، و کی یادگیری تطبیقی یا حالت جلسه فعال بوده.
-
-اگه فقط `monitor.py` رو می‌خواید (بدون آیکون)، نصب `pystray`/`Pillow` لازم نیست؛ فقط برای `menubar.py` لازمن. پنجره‌ی تنظیمات هم فقط به `tkinter` (کتابخانه‌ی استاندارد پایتون) نیاز داره، نه به وابستگی‌ی اضافه.
-
-**نکته‌ی لینوکس:** بعضی دسکتاپ‌ها (خصوصاً GNOME جدید) برای نمایش آیکون نوار سیستم به یه اکستنشن جداگانه نیاز دارن (مثل AppIndicator/KStatusNotifierItem)؛ اگه `menubar.py` روی توزیع شما آیکون رو نشون نداد، این اکستنشن رو نصب/فعال کنید یا از `monitor.py` معمولی استفاده کنید.
-
-لاگ فعالیت‌ها (تشخیص/عدم تشخیص/قفل شدن) در `data/activity.log` ذخیره می‌شود.
-
-## تنظیمات (`config.json`)
-
-| کلید | توضیح |
-|---|---|
-| `language` | زبان منو/پنجره‌ی تنظیمات و لاگ: `"en"` (پیش‌فرض) یا `"fa"` — راحت‌تر از منوی نوار منو یا پنجره‌ی تنظیمات عوض می‌شه |
-| `camera_index` | اگر چند دوربین دارید، شماره‌ی دوربین موردنظر (معمولاً 0) |
-| `check_interval_seconds` | هر چند ثانیه یک فریم از دوربین بررسی شود |
-| `away_seconds_threshold` | بعد از چند ثانیه‌ی «عدم تشخیص صورت» سیستم قفل شود |
-| `lock_cooldown_seconds` | حداقل فاصله بین دو بار قفل‌کردن پشت‌سرهم (برای جلوگیری از اسپم) |
-| `confidence_threshold` | آستانه‌ی تشخیص LBPH؛ عدد کمتر یعنی سخت‌گیرانه‌تر (پیش‌فرض ۷۰ — اگر تشخیص اشتباه زیاد بود کمترش کنید، اگر خودتان را تشخیص نمی‌داد بیشترش کنید) |
-| `min_face_size` | حداقل اندازه‌ی صورت (پیکسل) برای اینکه به‌عنوان صورت شناسایی شود |
-| `enroll_sample_count` | تعداد نمونه‌عکس‌هایی که `enroll.py` می‌گیرد |
-| `require_activity_check` | قفل نکردن حین فعالیت کیبورد/موس — روشن/خاموش |
-| `activity_grace_seconds` | فعالیت توی چند ثانیه‌ی اخیر «به‌تازگی» حساب بشه |
-| `activity_override_max_seconds` | سقف امنیتی: حداکثر چند ثانیه فعالیت کیبورد/موس به‌تنهایی (بدون تأیید چهره‌ی صاحب سیستم) می‌تونه قفل رو عقب بندازه |
-| `lock_faster_on_unrecognized_face` | اگه یه صورت غیر از صاحب سیستم دیده بشه، قفل سریع (با آستانه‌ی کوتاه‌تر) — روشن/خاموش |
-| `unrecognized_face_seconds_threshold` | وقتی صورت غریبه دیده بشه، بعد از چند ثانیه قفل شود |
-| `adaptive_learning` | یادگیری تطبیقی — روشن/خاموش |
-| `adaptive_learning_interval_minutes` | حداقل فاصله بین دو بار یادگیری تطبیقی |
-| `adaptive_learning_confidence_threshold` | چقدر مطمئن باشه تا یه نمونه رو قابل‌اعتماد بدونه (کمتر = محتاط‌تر) |
-| `adaptive_learning_max_samples` | سقف تعداد نمونه‌های تطبیقی نگه‌داشته‌شده |
-| `meeting_mode_enabled` | حالت جلسه (کاهش خودکار حساسیت) — روشن/خاموش |
-| `meeting_mode_multiplier` | آستانه‌ی قفل چند برابر بشه حین جلسه |
-| `meeting_app_names` | لیست اضافه‌ای از اسم پروسه‌های اپ‌های جلسه (علاوه بر لیست پیش‌فرض) |
-
-بعد از تغییر `config.json` لازم نیست دوباره enroll کنید؛ کافی‌ست `./monitor.sh` را دوباره اجرا کنید (یا اگر autostart است، دوباره start شود). اگر از `./run.sh` استفاده می‌کنید، بیشتر این تنظیمات را اصلاً لازم نیست دستی ادیت کنید — از منوی «تنظیمات» همان لحظه قابل‌تغییرند (بخش بعد).
-
-## اجرای خودکار موقع روشن‌شدن سیستم
-
-توی هرکدوم از سه روش زیر، هرجا مسیر `monitor.sh` نوشته شده، می‌تونید به‌جاش مسیر `run.sh` بذارید تا به‌جای یه پروسه‌ی پس‌زمینه‌ی بی‌صدا، همون آیکون نوار منو رو داشته باشید (LaunchAgent/Task Scheduler/systemd هرکدوم توی سشن گرافیکی کاربر اجرا می‌شن، پس آیکون درست نمایش داده می‌شه).
-
-**همیشه از `monitor.sh`/`run.sh`/`enroll.sh` استفاده کنید، نه مستقیم `python3 monitor.py` یا مسیر پایتون سیستمی** — این‌ها همیشه پایتون داخل `.venv` (با Tcl/Tk مدرن) را صدا می‌زنند؛ اجرای مستقیم با پایتون سیستمی اپل می‌تونه کرش کنه (بخش «نصب» بالاتر را ببینید).
-
-### macOS (LaunchAgent)
-
-فایلی با این مسیر بسازید: `~/Library/LaunchAgents/com.nima.facelock.plist`
+Create `~/Library/LaunchAgents/com.nima.facelock.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -210,52 +187,47 @@ brew install python-tk@3.12   # یا هر ورژن پایتونی که استف�
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key>
-  <string>com.nima.facelock</string>
+  <key>Label</key>          <string>com.nima.facelock</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/مسیر/کامل/تا/face-screen-lock/monitor.sh</string>
+    <string>/full/path/to/face-screen-lock/run.sh</string>
   </array>
-  <key>RunAtLoad</key>
-  <true/>
-  <key>KeepAlive</key>
-  <true/>
+  <key>RunAtLoad</key>      <true/>
+  <key>KeepAlive</key>      <true/>
   <key>StandardOutPath</key>
-  <string>/مسیر/کامل/تا/face-screen-lock/data/launchd.log</string>
+  <string>/full/path/to/face-screen-lock/data/launchd.log</string>
   <key>StandardErrorPath</key>
-  <string>/مسیر/کامل/تا/face-screen-lock/data/launchd.err</string>
+  <string>/full/path/to/face-screen-lock/data/launchd.err</string>
 </dict>
 </plist>
 ```
 
-مسیر را با مسیر واقعی پوشه‌ی `face-screen-lock` جایگزین کنید (خود `monitor.sh` قابل‌اجراست و خودش پایتون داخل `.venv` را پیدا می‌کند، نیازی به دادن مسیر پایتون جدا نیست). بعد:
-
 ```bash
 launchctl load ~/Library/LaunchAgents/com.nima.facelock.plist
+# To stop:
+launchctl unload ~/Library/LaunchAgents/com.nima.facelock.plist
 ```
 
-برای توقف: `launchctl unload ~/Library/LaunchAgents/com.nima.facelock.plist`
+### Windows — Task Scheduler
 
-### Windows (Task Scheduler)
+1. Open Task Scheduler → **Create Task**
+2. **General:** name it `FaceLock`, keep *"Run only when user is logged on"* (camera needs an active session)
+3. **Triggers → New:** Begin the task: **At log on**
+4. **Actions → New:** Program: `.venv\Scripts\pythonw.exe` · Arguments: full path to `monitor.py` · Start in: project folder
+5. Save — no admin password needed
 
-1. Task Scheduler را باز کنید > Create Task.
-2. تب General: اسمی بدهید (مثلاً FaceLock)، «Run whether user is logged on or not» را **نزنید** چون دوربین به سشن فعال نیاز دارد — همان «Run only when user is logged on» بماند.
-3. تب Triggers > New > Begin the task: **At log on**.
-4. تب Actions > New > Program/script: مسیر `pythonw.exe` (اگر داخل virtualenv نصب کرده‌اید، از `pythonw.exe` همان `venv`، مثلاً `...\face-screen-lock\.venv\Scripts\pythonw.exe`، استفاده کنید تا وابستگی‌ها پیدا بشن — نه پایتون سیستمی، تا کنسول هم باز نشود) — Add arguments: مسیر کامل `monitor.py` — Start in: مسیر پوشه‌ی `face-screen-lock`.
-5. ذخیره کنید.
+Simpler alternative: place a shortcut to `pythonw.exe "C:\path\face-screen-lock\monitor.py"` in `shell:startup`.
 
-راه ساده‌تر (بدون Task Scheduler): یک shortcut به همان `pythonw.exe "C:\مسیر\face-screen-lock\monitor.py"` بسازید و آن را در پوشه‌ی Startup بگذارید (در File Explorer آدرس `shell:startup` را باز کنید).
+### Linux — systemd user service
 
-### Linux (systemd user service)
-
-فایلی بسازید: `~/.config/systemd/user/facelock.service`
+Create `~/.config/systemd/user/facelock.service`:
 
 ```ini
 [Unit]
 Description=Face Lock Monitor
 
 [Service]
-ExecStart=/مسیر/کامل/تا/face-screen-lock/monitor.sh
+ExecStart=/full/path/to/face-screen-lock/run.sh
 Restart=on-failure
 Environment=DISPLAY=:0
 
@@ -263,23 +235,40 @@ Environment=DISPLAY=:0
 WantedBy=default.target
 ```
 
-سپس:
-
 ```bash
 systemctl --user daemon-reload
 systemctl --user enable --now facelock.service
 ```
 
-توجه: چون قفل‌کردن صفحه در لینوکس خیلی به محیط دسکتاپ (GNOME/KDE/XFCE/…) بستگی دارد، `lock_screen.py` چند دستور مختلف را پشت‌سرهم امتحان می‌کند (`loginctl lock-session`، `gnome-screensaver-command`، `xdg-screensaver`، `dbus-send` برای GNOME/freedesktop، `xscreensaver-command`، `cinnamon`/`mate`). اگر محیط دسکتاپ شما هیچ‌کدام را نداشت، یک خط برای دستور قفل‌کردن مخصوص همان DE به لیست `candidates` در `lock_screen.py` اضافه کنید.
+## Implementation Notes
 
-## نکات مهم و محدودیت‌ها
+**LBPH Face Recognition**
+- Lightweight OpenCV algorithm — no GPU, no `dlib`, no compilation required
+- Works well for personal/office use; not suitable as a primary security layer
+- Degrades in very low light or extreme angles — cover these during enrollment
 
-- این یک سیستم تشخیص چهره‌ی «تک‌نفره‌ی محلی» است، نه یک سیستم امنیتی درجه‌یک؛ روی LBPH (الگوریتم سبک OpenCV) کار می‌کند که در نور کم یا زاویه‌های عجیب ممکن است اشتباه کند. برای کاربرد شخصی/دفتری خوب است، ولی جای رمز عبور یا Touch ID/Windows Hello را نمی‌گیرد.
-- عکس‌های خام صورت شما در `data/faces/` ذخیره می‌شوند تا مدل آموزش ببیند؛ کاملاً محلی روی همین سیستم می‌مانند و جایی ارسال نمی‌شوند. اگر نمی‌خواهید نگه داشته شوند، بعد از موفقیت‌آمیز بودن `enroll.py` (وقتی `data/model.yml` ساخته شد) می‌توانید پوشه‌ی `data/faces/` را پاک کنید؛ فقط اگر بخواهید بعداً دوباره آموزش بدهید لازمشان دارید.
-- **روی مک — این تنظیم را حتماً انجام بدهید:** بعد از امتحان چند روش (شبیه‌سازی کلید، `CGSession`)، مشخص شد این‌ها روی نسخه‌های مختلف macOS و بسته به مجوز Accessibility/Automation رفتار غیرقابل‌اعتماد دارند (حتی وقتی دستی تست می‌کنید کار می‌کنند، از داخل اسکریپت ممکن است کار نکنند). به همین دلیل، روش اصلی الان `pmset displaysleepnow` است که هیچ مجوز خاصی لازم ندارد و همیشه اجرا می‌شود — ولی این دستور فقط صفحه را خاموش می‌کند؛ اینکه موقع روشن‌شدن دوباره واقعاً رمز بخواهد یا نه، فقط به یک تنظیم سیستمی بستگی دارد:
+**Adaptive Learning**
+- New samples saved with UNIX timestamp in filename (`adaptive_1234567890.png`)
+- Oldest adaptive samples auto-pruned when limit is reached
+- Original enrollment samples (`owner_*.png`) are never deleted
 
-  برو System Settings > Lock Screen، گزینه‌ی «Require password after screen saver begins or display is turned off» را پیدا کن و روی **Immediately** بگذار.
+**Security Design**
+- Activity-based lock delay has a hard ceiling (`activity_override_max_seconds`) to prevent bypass by prolonged typing
+- Stranger detection overrides the activity exception entirely — even if the keyboard is active
+- Face images stored locally in `data/faces/` — never transmitted anywhere
 
-  **اگر این تنظیم روشن نباشد، برنامه فقط صفحه را خاموش می‌کند ولی چیزی قفل نمی‌شود** — صرف‌نظر از اینکه لاگ «قفل شد» نشان بدهد یا نه (چون از نگاه برنامه، دستور بدون خطا اجرا شده). این تنظیم را حتماً چک/روشن کنید و بعد دوباره تست کنید. روش‌های شبیه‌سازی کلید (Control+Cmd+Q) و `CGSession -suspend` هم به‌عنوان تلاش آخر در کد باقی مانده‌اند، برای مواقعی که شانسی کار کنند، ولی نباید رویشان حساب باز کرد.
-- روی ویندوز قفل‌کردن همیشه با API خود ویندوز (`LockWorkStation`) کار می‌کند و نیازی به مجوز اضافه ندارد.
-- اگر می‌خواهید حساس‌تر/سخت‌گیرانه‌تر شود، `confidence_threshold` را در `config.json` کم کنید؛ اگر زیاد شما را «غریبه» تشخیص می‌دهد، زیادش کنید یا دوباره enroll کنید با نور بهتر.
+**Cross-Platform Locking**
+- **Windows:** `LockWorkStation()` via `ctypes` — always works, no permissions needed
+- **macOS:** `pmset displaysleepnow` — requires "Require password immediately" in System Settings
+- **Linux:** tries `loginctl lock-session` → `gnome-screensaver-command` → `xdg-screensaver` → `dbus-send` → `xscreensaver-command` in order
+
+**Known Limitations**
+- If Zoom/Teams uses the same webcam, frame capture fails silently (logs the error, does **not** lock — safe but unmonitored until the camera is free)
+- Meeting detection is process-name based, not call-state based — Zoom open but idle still activates meeting mode
+- Browser-based meetings (Google Meet in Chrome) cannot be detected — only standalone apps
+
+## License
+
+This project is for educational and personal use. For commercial deployment, configure identifiers and service keys according to your organization's requirements.
+
+---
