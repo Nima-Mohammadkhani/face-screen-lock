@@ -106,24 +106,21 @@ face-screen-lock/
 
 ### 1. Install Dependencies
 
-**Windows (PowerShell):**
+**Windows:**
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 **macOS:**
 > Do **not** use Apple's system Python (`/usr/bin/python3`) — it ships with an ancient Tcl/Tk 8.5 that crashes the settings window. Use Homebrew instead:
 ```bash
 brew install python@3.12 python-tk@3.12
-python3.12 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 **Linux:**
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+pip install -r requirements.txt
 # If tkinter is missing:
 sudo apt install python3-tk   # Debian/Ubuntu
 ```
@@ -132,9 +129,9 @@ sudo apt install python3-tk   # Debian/Ubuntu
 
 ### 2. Enroll Your Face (once)
 
-**Windows (PowerShell):**
+**Windows:**
 ```powershell
-.\.venv\Scripts\python.exe enroll.py
+python enroll.py
 ```
 
 **macOS / Linux:**
@@ -157,20 +154,12 @@ After all steps, the model trains automatically and saves to `data/model.yml`.
 
 ### 3. Start Monitoring
 
-**Windows (PowerShell):**
+**Windows:**
 ```powershell
-# System tray icon (recommended)
-.\.venv\Scripts\pythonw.exe menubar.py
-
-# Headless — no icon
-.\.venv\Scripts\python.exe monitor.py
-
-# With live camera preview
-.\.venv\Scripts\python.exe monitor.py --debug
+python menubar.py          # System tray icon (recommended)
+python monitor.py          # Headless — no icon
+python monitor.py --debug  # With live camera preview
 ```
-
-> In PowerShell, relative paths must start with `.\` — without it PowerShell treats the path as a module name and throws an error.  
-> `pythonw.exe` runs silently (no console window). Use `python.exe` if you want to see log output.
 
 **macOS / Linux:**
 ```bash
