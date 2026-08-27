@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Face Screen Lock — Documentation</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg2: #161b27;
+      --bg3: #1e2535;
+      --border: #2a3147;
+      --text: #e2e8f0;
+      --text-muted: #8892a4;
+      --accent: #6366f1;
+      --accent-soft: #6366f120;
+      --green: #22c55e;
+      --orange: #f97316;
+      --red: #ef4444;
+      --red-dark: #7f1d1d;
+      --blue: #3b82f6;
+      --gray: #64748b;
+      --yellow: #eab308;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(15, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 60px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; }
+    .nav-brand .lock-icon { font-size: 1.3rem; }
+    .nav-links { display: flex; gap: 1.8rem; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ─── LAYOUT ─── */
+    main { max-width: 1100px; margin: 0 auto; padding: 80px 2rem 4rem; }
+
+    /* ─── HERO ─── */
+    .hero {
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, #6366f130, transparent);
+      border-radius: var(--radius);
+      margin-bottom: 4rem;
+      border: 1px solid var(--border);
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: #a5b4fc;
+      border: 1px solid #6366f140;
+      padding: .3rem .9rem;
+      border-radius: 999px;
+      font-size: .8rem;
+      letter-spacing: .05em;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -.02em; margin-bottom: 1rem; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2.5rem; }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg3); border: 1px solid var(--border);
+      padding: .35rem .8rem; border-radius: 999px;
+      font-size: .78rem; color: var(--text-muted);
+    }
+    .badge .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    /* ─── SECTION ─── */
+    section { margin-bottom: 4rem; }
+    .section-label {
+      font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600; margin-bottom: .6rem;
+    }
+    h2 { font-size: 1.7rem; font-weight: 700; margin-bottom: 1.5rem; }
+    h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: .5rem; }
+
+    /* ─── FEATURES GRID ─── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .feature-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      transition: border-color .2s, transform .2s;
+    }
+    .feature-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .feature-icon { font-size: 1.6rem; margin-bottom: .8rem; }
+    .feature-card h3 { color: var(--text); margin-bottom: .4rem; }
+    .feature-card p { color: var(--text-muted); font-size: .9rem; }
+
+    /* ─── HOW IT WORKS ─── */
+    .steps { display: flex; flex-direction: column; gap: 1rem; }
+    .step {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.2rem 1.4rem;
+    }
+    .step-num {
+      min-width: 36px; height: 36px;
+      background: var(--accent-soft); color: #a5b4fc;
+      border: 1px solid #6366f140;
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-weight: 700; font-size: .9rem;
+    }
+    .step-body h3 { margin-bottom: .2rem; }
+    .step-body p { color: var(--text-muted); font-size: .9rem; }
+
+    /* ─── STATUS ICONS ─── */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: .8rem;
+    }
+    .status-item {
+      display: flex; gap: 1rem; align-items: center;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: .9rem 1.1rem;
+    }
+    .status-circle { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
+    .status-item .label { font-weight: 600; font-size: .9rem; }
+    .status-item .desc { color: var(--text-muted); font-size: .82rem; }
+
+    /* ─── TABS ─── */
+    .tabs { display: flex; gap: .4rem; margin-bottom: 1rem; }
+    .tab-btn {
+      padding: .45rem 1.1rem; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--bg2);
+      color: var(--text-muted); font-size: .88rem; cursor: pointer;
+      transition: all .2s;
+    }
+    .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ─── CODE BLOCK ─── */
+    pre {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 1.2rem 1.4rem;
+      overflow-x: auto; font-size: .85rem; line-height: 1.6;
+    }
+    code { font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace; }
+    .comment { color: #64748b; }
+    .cmd { color: #86efac; }
+    .kw { color: #a5b4fc; }
+
+    /* ─── CONFIG TABLE ─── */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    thead { background: var(--bg3); }
+    th { padding: .8rem 1rem; text-align: left; color: var(--text-muted); font-weight: 600; font-size: .8rem; letter-spacing: .05em; text-transform: uppercase; }
+    td { padding: .75rem 1rem; border-top: 1px solid var(--border); vertical-align: top; }
+    tr:hover td { background: var(--bg2); }
+    .key { font-family: monospace; color: #a5b4fc; font-size: .83rem; background: var(--accent-soft); padding: .15rem .45rem; border-radius: 4px; }
+    .default { font-family: monospace; color: var(--green); font-size: .83rem; }
+    td:last-child { color: var(--text-muted); }
+
+    /* ─── TECH STACK ─── */
+    .tech-grid {
+      display: flex; flex-wrap: wrap; gap: .7rem;
+    }
+    .tech-pill {
+      display: flex; align-items: center; gap: .5rem;
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: .4rem .9rem; border-radius: 999px;
+      font-size: .85rem; transition: border-color .2s;
+    }
+    .tech-pill:hover { border-color: var(--accent); }
+    .tech-pill .t-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ─── FILE TREE ─── */
+    .tree {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.4rem 1.6rem;
+      font-family: monospace; font-size: .85rem; line-height: 2;
+    }
+    .tree .folder { color: #fbbf24; }
+    .tree .file { color: var(--text-muted); }
+    .tree .file-desc { color: #475569; font-size: .8rem; }
+    .tree .highlight { color: var(--text); font-weight: 600; }
+
+    /* ─── CALLOUT ─── */
+    .callout {
+      display: flex; gap: .8rem;
+      padding: 1rem 1.2rem; border-radius: var(--radius-sm);
+      margin: 1rem 0; font-size: .9rem;
+    }
+    .callout.warning { background: #f9731610; border: 1px solid #f9731640; }
+    .callout.info    { background: #3b82f610; border: 1px solid #3b82f640; }
+    .callout.tip     { background: #22c55e10; border: 1px solid #22c55e40; }
+    .callout .icon { font-size: 1rem; flex-shrink: 0; margin-top: .1rem; }
+    .callout p { color: var(--text-muted); }
+    .callout p strong { color: var(--text); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center; padding: 2rem;
+      color: var(--text-muted); font-size: .85rem;
+      border-top: 1px solid var(--border); margin-top: 4rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ─── DIVIDER ─── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <span class="lock-icon">🔒</span>
+    Face Screen Lock
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#install">Install</a>
+    <a href="#config">Config</a>
+    <a href="#autostart">Auto-Start</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">Open Source · Python · Cross-Platform</div>
+    <h1>Face Screen <span>Lock</span></h1>
+    <p>Automatically locks your screen when you step away — powered by real-time facial recognition, fully local with no cloud dependency.</p>
+    <div class="hero-badges">
+      <span class="badge"><span class="dot" style="background:#3776AB"></span>Python 3.9+</span>
+      <span class="badge"><span class="dot" style="background:#5C3EE8"></span>OpenCV LBPH</span>
+      <span class="badge"><span class="dot" style="background:#22c55e"></span>Windows</span>
+      <span class="badge"><span class="dot" style="background:#f97316"></span>macOS</span>
+      <span class="badge"><span class="dot" style="background:#6366f1"></span>Linux</span>
+      <span class="badge"><span class="dot" style="background:#FF6B6B"></span>EN / فارسی</span>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-label">What it does</div>
+    <h2>Features</h2>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Real-Time Face Recognition</h3>
+        <p>Captures a frame every few seconds and recognizes your face using OpenCV's LBPH algorithm — lightweight, local, and fast.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>Adaptive Learning</h3>
+        <p>Automatically updates your model when high-confidence matches are detected. Adapts to gradual appearance changes like new glasses or a beard — no re-enrollment needed.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⌨️</div>
+        <h3>Activity Awareness</h3>
+        <p>Won't lock while you're actively typing or moving the mouse. Cross-platform idle detection with a configurable grace period and security ceiling.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">👤</div>
+        <h3>Stranger Detection</h3>
+        <p>If a face is detected but doesn't match you, the system locks faster — and keyboard activity won't delay the lock.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📹</div>
+        <h3>Meeting Mode</h3>
+        <p>Detects running meeting apps (Zoom, Teams, Skype, Webex…) and multiplies the lock timeout, so natural gaze shifts during calls don't trigger locks.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3>Bilingual UI</h3>
+        <p>Full Persian (فارسی) and English support across the menu, settings window, and logs. Switch languages live — no restart needed.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🖥️</div>
+        <h3>System Tray Icon</h3>
+        <p>Colored circle in the menu bar or system tray shows your live detection status at a glance — no terminal needed during daily use.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">☁️</div>
+        <h3>100% Local</h3>
+        <p>Face images, trained model, and logs never leave your machine. No accounts, no subscriptions, no cloud calls.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- STATUS ICONS -->
+  <section>
+    <div class="section-label">System Tray</div>
+    <h2>Status Icon Colors</h2>
+    <div class="status-grid">
+      <div class="status-item">
+        <div class="status-circle" style="background:#22c55e"></div>
+        <div><div class="label">Green</div><div class="desc">Owner detected — all clear</div></div>
+      </div>
+      <div class="status-item">
+        <div class="status-circle" style="background:#f97316"></div>
+        <div><div class="label">Orange</div><div class="desc">Away — within grace period before lock</div></div>
+      </div>
+      <div class="status-item">
+        <div class="status-circle" style="background:#7f1d1d; border: 2px solid #ef4444"></div>
+        <div><div class="label">Dark Red</div><div class="desc">Unrecognized face — fast-lock active</div></div>
+      </div>
+      <div class="status-item">
+        <div class="status-circle" style="background:#475569"></div>
+        <div><div class="label">Gray</div><div class="desc">Monitoring paused</div></div>
+      </div>
+      <div class="status-item">
+        <div class="status-circle" style="background:#3b82f6"></div>
+        <div><div class="label">Blue</div><div class="desc">Starting up</div></div>
+      </div>
+      <div class="status-item">
+        <div class="status-circle" style="background:#ef4444"></div>
+        <div><div class="label">Red</div><div class="desc">Error — camera unavailable or model missing</div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works">
+    <div class="section-label">Under the hood</div>
+    <h2>How It Works</h2>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Enrollment (one-time setup)</h3>
+          <p>The guided wizard captures ~40 face samples across different angles and lighting conditions, then trains an LBPH model saved to <code>data/model.yml</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Continuous Monitoring</h3>
+          <p>Every <code>check_interval_seconds</code> (default: 2s), the monitor captures a frame, runs Haar Cascade face detection, and passes detected faces to the LBPH model for recognition.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Decision Logic</h3>
+          <p>Owner recognized → reset away-timer. No face or stranger detected → increment away-timer. Activity override, meeting mode, and stranger detection all modify the final lock decision.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>Screen Lock</h3>
+          <p>When away-time exceeds the threshold, the OS-specific lock command runs: <code>LockWorkStation()</code> on Windows, <code>pmset displaysleepnow</code> on macOS, <code>loginctl lock-session</code> on Linux.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h3>Adaptive Retrain (background)</h3>
+          <p>When a high-confidence recognition occurs (above <code>adaptive_learning_confidence_threshold</code>), the frame is saved and the model silently retrains — keeping up with gradual appearance changes.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- INSTALL -->
+  <section id="install">
+    <div class="section-label">Getting started</div>
+    <h2>Installation &amp; Quick Start</h2>
+
+    <h3 style="margin-bottom:.8rem; color: var(--text-muted); font-weight:500;">Step 1 — Install dependencies</h3>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('install', 'win')">Windows</button>
+      <button class="tab-btn" onclick="showTab('install', 'mac')">macOS</button>
+      <button class="tab-btn" onclick="showTab('install', 'linux')">Linux</button>
+    </div>
+
+    <div id="install-win" class="tab-panel active">
+      <pre><code><span class="cmd">pip</span> install -r requirements.txt</code></pre>
+    </div>
+    <div id="install-mac" class="tab-panel">
+      <div class="callout warning">
+        <span class="icon">⚠️</span>
+        <p><strong>Do not use Apple's system Python</strong> — it ships with Tcl/Tk 8.5 which crashes the settings window. Install a modern Python via Homebrew:</p>
+      </div>
+      <pre><code><span class="cmd">brew</span> install python@3.12 python-tk@3.12
+<span class="cmd">pip</span> install -r requirements.txt</code></pre>
+    </div>
+    <div id="install-linux" class="tab-panel">
+      <pre><code><span class="cmd">pip</span> install -r requirements.txt
+
+<span class="comment"># If tkinter is missing (Debian/Ubuntu):</span>
+<span class="cmd">sudo apt</span> install python3-tk</code></pre>
+    </div>
+
+    <br />
+    <h3 style="margin-bottom:.8rem; color: var(--text-muted); font-weight:500;">Step 2 — Enroll your face <em style="font-size:.8rem">(once)</em></h3>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('enroll', 'win')">Windows</button>
+      <button class="tab-btn" onclick="showTab('enroll', 'mac')">macOS / Linux</button>
+    </div>
+    <div id="enroll-win" class="tab-panel active">
+      <pre><code><span class="cmd">python</span> enroll.py</code></pre>
+    </div>
+    <div id="enroll-mac" class="tab-panel">
+      <pre><code><span class="cmd">./enroll.sh</span></code></pre>
+    </div>
+
+    <div class="callout tip" style="margin-top:1rem">
+      <span class="icon">💡</span>
+      <p>The wizard guides you through 6 angles (forward, left, right, up, down, low-light). After all steps the model trains automatically and saves to <strong>data/model.yml</strong>.</p>
+    </div>
+
+    <br />
+    <h3 style="margin-bottom:.8rem; color: var(--text-muted); font-weight:500;">Step 3 — Start monitoring</h3>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('run', 'win')">Windows</button>
+      <button class="tab-btn" onclick="showTab('run', 'mac')">macOS / Linux</button>
+    </div>
+    <div id="run-win" class="tab-panel active">
+      <pre><code><span class="comment"># System tray icon (recommended)</span>
+<span class="cmd">python</span> menubar.py
+
+<span class="comment"># Headless — no icon</span>
+<span class="cmd">python</span> monitor.py
+
+<span class="comment"># With live camera preview for tuning</span>
+<span class="cmd">python</span> monitor.py --debug</code></pre>
+    </div>
+    <div id="run-mac" class="tab-panel">
+      <pre><code><span class="cmd">./run.sh</span>             <span class="comment"># System tray icon (recommended)</span>
+<span class="cmd">./monitor.sh</span>         <span class="comment"># Headless — no icon</span>
+<span class="cmd">./monitor.sh</span> --debug <span class="comment"># With live camera preview</span></code></pre>
+    </div>
+
+    <div class="callout warning" style="margin-top:1rem">
+      <span class="icon">⚠️</span>
+      <p><strong>macOS only:</strong> Go to <strong>System Settings → Lock Screen</strong> and set <em>"Require password after screen saver begins or display is turned off"</em> to <strong>Immediately</strong> — otherwise the screen turns off but nothing actually locks.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- PROJECT STRUCTURE -->
+  <section>
+    <div class="section-label">Codebase</div>
+    <h2>Project Structure</h2>
+    <div class="tree">
+      <div><span class="folder">face-screen-lock/</span></div>
+      <div>&nbsp;&nbsp;├── <span class="highlight">monitor.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">Entry point — headless monitoring</span></div>
+      <div>&nbsp;&nbsp;├── <span class="highlight">monitor_core.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">MonitorEngine: main loop, detection &amp; lock logic</span></div>
+      <div>&nbsp;&nbsp;├── <span class="highlight">enroll.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">Guided face enrollment wizard</span></div>
+      <div>&nbsp;&nbsp;├── <span class="highlight">menubar.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">System tray icon, menu, config hot-reload</span></div>
+      <div>&nbsp;&nbsp;├── <span class="highlight">settings_window.py</span> &nbsp;&nbsp;<span class="file-desc">Tkinter settings GUI (4 tabs)</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">camera_utils.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">Webcam open + Haar Cascade detection</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">activity_utils.py</span> &nbsp;&nbsp;&nbsp;<span class="file-desc">Cross-platform keyboard/mouse idle detection</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">lock_screen.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">OS-specific screen lock commands</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">meeting_utils.py</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">Meeting app detection via psutil</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">i18n.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">Bilingual string table (EN / FA)</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">text_render.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">RTL Persian text renderer</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">config_utils.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">config.json load/save</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">config.json</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">User configuration</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">requirements.txt</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">Python dependencies</span></div>
+      <div>&nbsp;&nbsp;└── <span class="folder">data/</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">model.yml</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">Trained LBPH model (~5 MB)</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">labels.json</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">Face label mappings</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">activity.log</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-desc">Detection and lock event log</span></div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- CONFIG TABLE -->
+  <section id="config">
+    <div class="section-label">Customization</div>
+    <h2>Configuration Reference</h2>
+    <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:.95rem;">All settings live in <code>config.json</code> and can be changed live from the Settings window without restarting.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="key">language</span></td><td><span class="default">"en"</span></td><td>UI language — <code>"en"</code> or <code>"fa"</code></td></tr>
+          <tr><td><span class="key">camera_index</span></td><td><span class="default">0</span></td><td>Which webcam to use (0 = first)</td></tr>
+          <tr><td><span class="key">check_interval_seconds</span></td><td><span class="default">2</span></td><td>How often to capture and analyze a frame</td></tr>
+          <tr><td><span class="key">away_seconds_threshold</span></td><td><span class="default">15</span></td><td>Seconds without owner face before locking</td></tr>
+          <tr><td><span class="key">lock_cooldown_seconds</span></td><td><span class="default">30</span></td><td>Minimum gap between consecutive lock attempts</td></tr>
+          <tr><td><span class="key">confidence_threshold</span></td><td><span class="default">70</span></td><td>LBPH match sensitivity — lower is stricter</td></tr>
+          <tr><td><span class="key">require_activity_check</span></td><td><span class="default">true</span></td><td>Skip lock while actively typing or moving mouse</td></tr>
+          <tr><td><span class="key">activity_grace_seconds</span></td><td><span class="default">5</span></td><td>How recent activity must be to count</td></tr>
+          <tr><td><span class="key">activity_override_max_seconds</span></td><td><span class="default">120</span></td><td>Security ceiling: max seconds activity alone can delay lock</td></tr>
+          <tr><td><span class="key">lock_faster_on_unrecognized_face</span></td><td><span class="default">true</span></td><td>Fast-lock when a stranger's face is visible</td></tr>
+          <tr><td><span class="key">unrecognized_face_seconds_threshold</span></td><td><span class="default">5</span></td><td>Lock timeout when stranger is detected</td></tr>
+          <tr><td><span class="key">adaptive_learning</span></td><td><span class="default">true</span></td><td>Auto-update model from high-confidence detections</td></tr>
+          <tr><td><span class="key">adaptive_learning_interval_minutes</span></td><td><span class="default">10</span></td><td>Minimum gap between adaptive retrains</td></tr>
+          <tr><td><span class="key">adaptive_learning_confidence_threshold</span></td><td><span class="default">40</span></td><td>Confidence required to accept an adaptive sample</td></tr>
+          <tr><td><span class="key">adaptive_learning_max_samples</span></td><td><span class="default">80</span></td><td>Max adaptive samples kept — oldest are pruned</td></tr>
+          <tr><td><span class="key">meeting_mode_enabled</span></td><td><span class="default">true</span></td><td>Extend lock timeout when a meeting app is running</td></tr>
+          <tr><td><span class="key">meeting_mode_multiplier</span></td><td><span class="default">3</span></td><td>Multiply lock threshold by this during meetings</td></tr>
+          <tr><td><span class="key">meeting_app_names</span></td><td><span class="default">[]</span></td><td>Extra process names to treat as meeting apps</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- AUTO-START -->
+  <section id="autostart">
+    <div class="section-label">Run at boot</div>
+    <h2>Auto-Start at Login</h2>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('boot', 'win')">Windows</button>
+      <button class="tab-btn" onclick="showTab('boot', 'mac')">macOS</button>
+      <button class="tab-btn" onclick="showTab('boot', 'linux')">Linux</button>
+    </div>
+
+    <div id="boot-win" class="tab-panel active">
+      <p style="color:var(--text-muted); margin-bottom:1rem; font-size:.9rem;">Create a shortcut and drop it in the Startup folder:</p>
+      <pre><code><span class="comment">Win+R → shell:startup</span>
+
+<span class="comment">Create a shortcut with:</span>
+Target:   C:\path\face-screen-lock\menubar.py
+Start in: C:\path\face-screen-lock</code></pre>
+      <p style="color:var(--text-muted); margin-top:1rem; font-size:.9rem;">Or use Task Scheduler → Create Task → Trigger: At log on → Action: <code>python menubar.py</code></p>
+    </div>
+
+    <div id="boot-mac" class="tab-panel">
+      <p style="color:var(--text-muted); margin-bottom:1rem; font-size:.9rem;">Create a LaunchAgent plist:</p>
+      <pre><code><span class="comment"># ~/Library/LaunchAgents/com.nima.facelock.plist</span>
+
+<span class="kw">&lt;?xml</span> version="1.0" encoding="UTF-8"<span class="kw">?&gt;</span>
+<span class="kw">&lt;plist</span> version="1.0"<span class="kw">&gt;</span>
+<span class="kw">&lt;dict&gt;</span>
+  <span class="kw">&lt;key&gt;</span>Label<span class="kw">&lt;/key&gt;</span>
+  <span class="kw">&lt;string&gt;</span>com.nima.facelock<span class="kw">&lt;/string&gt;</span>
+  <span class="kw">&lt;key&gt;</span>ProgramArguments<span class="kw">&lt;/key&gt;</span>
+  <span class="kw">&lt;array&gt;</span>
+    <span class="kw">&lt;string&gt;</span>/full/path/to/run.sh<span class="kw">&lt;/string&gt;</span>
+  <span class="kw">&lt;/array&gt;</span>
+  <span class="kw">&lt;key&gt;</span>RunAtLoad<span class="kw">&lt;/key&gt;</span> <span class="kw">&lt;true/&gt;</span>
+  <span class="kw">&lt;key&gt;</span>KeepAlive<span class="kw">&lt;/key&gt;</span>  <span class="kw">&lt;true/&gt;</span>
+<span class="kw">&lt;/dict&gt;</span>
+<span class="kw">&lt;/plist&gt;</span>
+
+<span class="comment"># Load it:</span>
+<span class="cmd">launchctl</span> load ~/Library/LaunchAgents/com.nima.facelock.plist</code></pre>
+    </div>
+
+    <div id="boot-linux" class="tab-panel">
+      <p style="color:var(--text-muted); margin-bottom:1rem; font-size:.9rem;">Create a systemd user service:</p>
+      <pre><code><span class="comment"># ~/.config/systemd/user/facelock.service</span>
+
+[Unit]
+Description=Face Lock Monitor
+
+[Service]
+ExecStart=/full/path/to/run.sh
+Restart=on-failure
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=default.target</code></pre>
+      <pre style="margin-top:.6rem"><code><span class="cmd">systemctl</span> --user daemon-reload
+<span class="cmd">systemctl</span> --user enable --now facelock.service</code></pre>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- TECH STACK -->
+  <section>
+    <div class="section-label">Dependencies</div>
+    <h2>Tech Stack</h2>
+    <div class="tech-grid">
+      <div class="tech-pill"><span class="t-dot" style="background:#3776AB"></span>Python 3.9+</div>
+      <div class="tech-pill"><span class="t-dot" style="background:#5C3EE8"></span>OpenCV contrib</div>
+      <div class="tech-pill"><span class="t-dot" style="background:#013243"></span>NumPy</div>
+      <div class="tech-pill"><span class="t-dot" style="background:#888"></span>pystray</div>
+      <div class="tech-pill"><span class="t-dot" style="background:#FFD43B"></span>Pillow</div>
+      <div class="tech-pill"><span class="t-dot" style="background:#3776AB"></span>Tkinter</div>
+      <div class="tech-pill"><span class="t-dot" style="background:#22c55e"></span>psutil</div>
+      <div class="tech-pill"><span class="t-dot" style="background:#FF6B6B"></span>arabic-reshaper</div>
+      <div class="tech-pill"><span class="t-dot" style="background:#FF6B6B"></span>python-bidi</div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- LIMITATIONS -->
+  <section>
+    <div class="section-label">Good to know</div>
+    <h2>Limitations</h2>
+    <div class="features-grid">
+      <div class="feature-card" style="border-color:#f9731640">
+        <div class="feature-icon">💡</div>
+        <h3>LBPH — not deep learning</h3>
+        <p>Good for personal/office use. Degrades in very low light or extreme angles. Not a replacement for Windows Hello or Touch ID.</p>
+      </div>
+      <div class="feature-card" style="border-color:#f9731640">
+        <div class="feature-icon">📷</div>
+        <h3>Shared webcam</h3>
+        <p>If Zoom or Teams uses the same camera, frame capture fails silently — the app logs the error and does <strong>not</strong> lock (safe but unmonitored).</p>
+      </div>
+      <div class="feature-card" style="border-color:#f9731640">
+        <div class="feature-icon">🌐</div>
+        <h3>Browser meetings undetectable</h3>
+        <p>Google Meet in Chrome shows as just "Chrome running" — only standalone meeting apps (Zoom, Teams…) can be detected by process name.</p>
+      </div>
+      <div class="feature-card" style="border-color:#f9731640">
+        <div class="feature-icon">🍎</div>
+        <h3>macOS needs a setting</h3>
+        <p><code>pmset displaysleepnow</code> only turns the display off. You must enable "Require password immediately" in System Settings for it to actually lock.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Face Screen Lock &mdash; Educational &amp; Personal Use &nbsp;·&nbsp; <a href="https://github.com/Nima-Mohammadkhani/face-screen-lock">GitHub</a></p>
+</footer>
+
+<script>
+  function showTab(group, id) {
+    document.querySelectorAll(`[id^="${group}-"]`).forEach(el => el.classList.remove('active'));
+    document.getElementById(`${group}-${id}`).classList.add('active');
+    event.target.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
