@@ -1,0 +1,22 @@
+{
+  "language": "en",
+  "camera_index": 0,
+  "check_interval_seconds": 2,
+  "away_seconds_threshold": 2,
+  "lock_cooldown_seconds": 30,
+  "confidence_threshold": 70,
+  "min_face_size": 100,
+  "enroll_sample_count": 40,
+  "require_activity_check": true,
+  "activity_grace_seconds": 2,
+  "activity_override_max_seconds": 30,
+  "lock_faster_on_unrecognized_face": true,
+  "unrecognized_face_seconds_threshold": 2,
+  "adaptive_learning": true,
+  "adaptive_learning_interval_minutes": 10,
+  "adaptive_learning_confidence_threshold": 40,
+  "adaptive_learning_max_samples": 80,
+  "meeting_mode_enabled": true,
+  "meeting_mode_multiplier": 3,
+  "meeting_app_names": []
+}
