@@ -106,10 +106,10 @@ face-screen-lock/
 
 ### 1. Install Dependencies
 
-**Windows:**
-```cmd
+**Windows (PowerShell):**
+```powershell
 python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
+.\.venv\Scripts\pip install -r requirements.txt
 ```
 
 **macOS:**
@@ -132,9 +132,9 @@ sudo apt install python3-tk   # Debian/Ubuntu
 
 ### 2. Enroll Your Face (once)
 
-**Windows:**
-```cmd
-.venv\Scripts\python.exe enroll.py
+**Windows (PowerShell):**
+```powershell
+.\.venv\Scripts\python.exe enroll.py
 ```
 
 **macOS / Linux:**
@@ -157,19 +157,20 @@ After all steps, the model trains automatically and saves to `data/model.yml`.
 
 ### 3. Start Monitoring
 
-**Windows:**
-```cmd
-:: System tray icon (recommended)
-.venv\Scripts\pythonw.exe menubar.py
+**Windows (PowerShell):**
+```powershell
+# System tray icon (recommended)
+.\.venv\Scripts\pythonw.exe menubar.py
 
-:: Headless — no icon
-.venv\Scripts\python.exe monitor.py
+# Headless — no icon
+.\.venv\Scripts\python.exe monitor.py
 
-:: With live camera preview
-.venv\Scripts\python.exe monitor.py --debug
+# With live camera preview
+.\.venv\Scripts\python.exe monitor.py --debug
 ```
 
-> `pythonw.exe` runs without a console window. Use `python.exe` if you want to see log output in a terminal.
+> In PowerShell, relative paths must start with `.\` — without it PowerShell treats the path as a module name and throws an error.  
+> `pythonw.exe` runs silently (no console window). Use `python.exe` if you want to see log output.
 
 **macOS / Linux:**
 ```bash
@@ -253,9 +254,11 @@ launchctl unload ~/Library/LaunchAgents/com.nima.facelock.plist
 
 **Simpler alternative:** Create a shortcut and place it in the Startup folder (`Win+R` → `shell:startup`):
 ```
-Target:  C:\path\face-screen-lock\.venv\Scripts\pythonw.exe menubar.py
+Target:   C:\path\face-screen-lock\.venv\Scripts\pythonw.exe menubar.py
 Start in: C:\path\face-screen-lock
 ```
+
+> Use full absolute paths in Task Scheduler and shortcuts — relative paths like `.\.venv\...` only work when you're already in the project folder.
 
 ### Linux — systemd user service
 
